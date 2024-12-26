@@ -1,0 +1,194 @@
+import React, { useState, useEffect, startTransition } from "react";
+import { motion } from 'framer-motion';
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { useAuth } from "../hooks/useAuth";
+import "./Signin.css";
+
+interface SignInForm {
+    email: string;
+    password: string;
+}
+export function SignUp() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
+    const { signIn } = useAuth();
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<SignInForm>({
+        defaultValues: {
+            email: "",
+            password: "",
+        },
+    });
+
+    const onSubmit = async (data: SignInForm) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const { user, error: signInError } = await signIn(
+                data.email,
+                data.password
+            );
+
+            if (signInError) {
+                setError(signInError);
+                setIsLoading(false);
+                return;
+            }
+
+            if (!user) {
+                setError("Invalid credentials");
+                setIsLoading(false);
+                return;
+            }
+
+            // Close modal first
+            // onClose();
+            // Then navigate
+            startTransition(() => {
+                navigate("/dashboard");
+            });
+        } catch (err) {
+            console.error("Sign in error:", err);
+            setError(
+                err instanceof Error ? err.message : "An unexpected error occurred"
+            );
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <>
+            <div className="sign-container">
+                <div className="sign-container--left">
+                    <div className="sign-container--left">
+                        <Link to="/" className="flex items-center">
+                            <motion.span
+                                className="text-2xl font-display font-bold text-accent-600"
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                            >
+                                Decikar.ai
+                            </motion.span>
+                        </Link>
+                        {/* <div className="sign-wordmark">
+                        <img
+                            src="/sign-in/assets/images/wordmarks/wordmark-green.svg"
+                            alt="writer logo"
+                            width="129"
+                            height="43"
+                        />
+                    </div> */}
+                        <div className="sign-description">
+                            <h1 id="org-name-holder" className="sign-description--title">
+                                Sign up to your account
+                            </h1>
+                        </div>
+                        <div className="sign-art">
+                            <img
+                                src='/character-1.svg'
+                                alt="writer character"
+                                width="323"
+                                height="250"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className="sign-container--right">
+                    <div className="box box-sign">
+                        <form action="#" id="sign-form" className="sign-form" method="post">
+                            <div
+                                className="sign-form--row notification"
+                                id="notification-container"
+                            >
+                                <p>
+                                    We’ve emailed you instructions on how to reset your password.
+                                </p>
+                            </div>
+                            <div className="sign-form--row">
+                                <label htmlFor="email" className="sign-form--label">
+                                    email
+                                </label>
+                                <input
+                                    id="email"
+                                    name="email"
+                                    className="form-input sign-form--input"
+                                />
+                            </div>
+                            <div className="sign-form--row">
+                                <label htmlFor="password" className="sign-form--label">
+                                    password
+                                </label>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    className="form-input sign-form--input"
+                                />
+                            </div>
+                            <div className="sign-form--row">
+                                <div className="sign-form--error" id="error-container">
+                                    <p className="sign-form--error-message"></p>
+                                </div>
+                            </div>
+                            <div className="sign-form--row main-btn">
+                                <div className="sign-in-btn">
+                                    {/* <button className="btn btn-black" id="sign-in-button" disabled> */}
+                                    <button className="btn btn-black" id="sign-in-button">
+                                        {/* <div className="spin" style={{display:'block'}}> */}
+                                        <div className="spin" >
+                                            <div className="bounce1"></div>
+                                            <div className="bounce2"></div>
+                                            <div className="bounce3"></div>
+                                        </div>
+                                        <span className="holder">Sign up</span>
+                                        {/* <span className="holder" style={{opacity:'0'}}>Sign in</span> */}
+                                    </button>
+                                </div>
+                            </div>
+                            <div
+                                id="identity-separator"
+                                className="sign-form--row main-separator"
+                            >
+                                <div className="or">
+                                    <span>or</span>
+                                </div>
+                            </div>
+                            <div
+                                className="sign-form--row secondary-btn"
+                                id="additional-identity"
+                            >
+                                <button
+                                    className="sign-form--internal-image-button"
+                                    id="google-identity-button"
+                                >
+                                    <span>
+                                        <img
+                                            alt="google logo"
+                                            height="43"
+                                            src="/google.svg"
+                                            width="129"
+                                        />
+                                    </span>
+                                    <span>Sign up with Google</span>
+                                </button>
+                            </div>
+                            <div className="sign-form--row forgot-password">
+                                <Link
+                                    to="/signin" id="forgot-password-handler">
+                                    I have an account
+                                </Link>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
